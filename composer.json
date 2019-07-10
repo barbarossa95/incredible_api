@@ -1,0 +1,11 @@
+{
+  "name": "greshilovv/incredible-api",
+  "type": "project",
+  "authors": [
+    {
+      "name": "Vlad Greshilov",
+      "email": "vgreshilov@mail.ru"
+    }
+  ],
+  "require": {}
+}
