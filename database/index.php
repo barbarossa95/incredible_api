@@ -1,2 +1,0 @@
-<?php
-echo "database index";
