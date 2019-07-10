@@ -1,3 +1,12 @@
+# Deny access to filenames starting with dot(.)
+<FilesMatch "^\.">
+Order allow,deny
+Deny from all
+</FilesMatch>
+
+# Disable directory browsing
+Options -Indexes
+
 <IfModule dir_module>
     DirectoryIndex index.php
 </IfModule>
@@ -14,14 +23,3 @@
         Header set Expires "Wed, 11 Jan 1984 05:00:00 GMT"
     </IfModule>
 </FilesMatch>
-
-<IfModule mod_rewrite.c>
-    # RewriteEngine On
-    # RewriteCond %{REQUEST_FILENAME} !-f
-    # RewriteRule ^([^/]+)/$ $1.php
-    # RewriteRule ^([^/]+)/([^/]+)/$ /$1/$2.php
-    # RewriteCond %{REQUEST_FILENAME} !-f
-    # RewriteCond %{REQUEST_FILENAME} !-d
-    # RewriteCond %{REQUEST_URI} !(\.[a-zA-Z0-9]{1,5}|/)$
-    # RewriteRule (.*)$ /$1/ [R=301,L]
-</IfModule>
