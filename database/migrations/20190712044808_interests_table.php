@@ -35,7 +35,7 @@ class InterestsTable extends AbstractMigration
         $table
             ->addColumn('slug', 'string', ['limit' => 20])
             ->addColumn('name', 'string', ['limit' => 20])
-            ->addColumn('description', 'string', ['limit' => 100, 'null' => true])
+            ->addColumn('description', 'string', ['limit' => 100, 'null' => true, 'default' => null])
             ->addIndex(['slug'], ['unique' => true])
 
             ->create();

@@ -33,8 +33,8 @@ class AddLatLongUserTable extends AbstractMigration
     {
         $table = $this->table('users');
         $table
-            ->addColumn('lat', 'decimal', ['precision' => 10, 'scale' => 7, 'null' => true])
-            ->addColumn('long', 'decimal', ['precision' => 10, 'scale' => 7, 'null' => true])
+            ->addColumn('lat', 'decimal', ['precision' => 10, 'scale' => 7, 'null' => true, 'default' => null])
+            ->addColumn('long', 'decimal', ['precision' => 10, 'scale' => 7, 'null' => true, 'default' => null])
             ->update();
     }
 }
