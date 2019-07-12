@@ -2,7 +2,7 @@
 
 use Phinx\Migration\AbstractMigration;
 
-class UsersTable extends AbstractMigration
+class UserInterestsTable extends AbstractMigration
 {
     /**
      * Change Method.
@@ -31,14 +31,15 @@ class UsersTable extends AbstractMigration
      */
     public function change()
     {
-        $table = $this->table('users');
+        $table = $this->table('user_interests');
         $table
-            ->addColumn('name', 'string', ['limit' => 20])
-            ->addColumn('email', 'string', ['limit' => 40])
-            ->addColumn('password', 'string', ['limit' => 60])
-            ->addColumn('last_login_at', 'timestamp', ['default' => 'CURRENT_TIMESTAMP'])
-            ->addColumn('birthdate', 'timestamp', ['default' => 'CURRENT_TIMESTAMP'])
-            ->addIndex(['email'], ['unique' => true])
+            ->addColumn('user_id', 'integer', ['null' => true])
+            ->addColumn('interest_id', 'integer', ['null' => true])
             ->create();
+
+        $table
+            ->addForeignKey('user_id', 'users', 'id', ['delete' => 'CASCADE'])
+            ->addForeignKey('interest_id', 'interests', 'id', ['delete' => 'CASCADE'])
+            ->update();
     }
 }
