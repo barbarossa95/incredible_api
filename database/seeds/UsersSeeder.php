@@ -14,6 +14,12 @@ class UsersSeeder extends AbstractSeed
      */
     public function run()
     {
+        $users = $this->table('users');
+
+        $this->execute('SET foreign_key_checks=0');
+        $users->truncate();
+        $this->execute('SET foreign_key_checks=1');
+
         $faker = Faker\Factory::create();
 
         for ($i = 0; $i < 100; $i++) {
@@ -28,8 +34,10 @@ class UsersSeeder extends AbstractSeed
                 'lat'           => $geoData['geoplugin_latitude'],
                 'long'          => $geoData['geoplugin_longitude'],
                 'country_code'  => $geoData['geoplugin_countryCode'],
+                'age_limit_min' => $faker->boolean ? $faker->numberBetween(6, 40) : null,
+                'age_limit_max' => $faker->boolean ? $faker->numberBetween(6, 40) : null,
             ];
-            $this->table('users')->insert($data)->save();
+            $users->insert($data)->save();
         }
     }
 
