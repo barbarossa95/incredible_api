@@ -18,6 +18,7 @@ class InterestsSeeder extends AbstractSeed
 
         for ($i = 1; $i <= 3; $i++) {
             $row = [];
+            $row['slug'] = "interest$i";
             $row['name'] = "Интерес $i";
             $row['description'] = "Эпичное описание интереса $i";
             $data[] = $row;
