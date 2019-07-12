@@ -34,12 +34,12 @@ class UserInterestsTable extends AbstractMigration
         $table = $this->table('user_interests');
         $table
             ->addColumn('user_id', 'integer', ['null' => true])
-            ->addColumn('interest_id', 'integer', ['null' => true])
+            ->addColumn('interest_slug', 'string', ['limit' => 20, 'null' => true])
             ->create();
 
         $table
             ->addForeignKey('user_id', 'users', 'id', ['delete' => 'CASCADE'])
-            ->addForeignKey('interest_id', 'interests', 'id', ['delete' => 'CASCADE'])
+            ->addForeignKey('interest_slug', 'interests', 'slug', ['delete' => 'CASCADE'])
             ->update();
     }
 }
