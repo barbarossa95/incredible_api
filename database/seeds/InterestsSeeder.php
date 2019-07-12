@@ -17,11 +17,11 @@ class InterestsSeeder extends AbstractSeed
         $data = [];
 
         for ($i = 1; $i <= 3; $i++) {
-            $row = [];
-            $row['slug'] = "interest$i";
-            $row['name'] = "Интерес $i";
-            $row['description'] = "Эпичное описание интереса $i";
-            $data[] = $row;
+            $data[] = [
+                'slug' => "interest$i",
+                'name' => "Интерес $i",
+                'description' => "Эпичное описание интереса $i"
+            ];
         }
 
         $interests = $this->table('interests');
