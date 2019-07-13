@@ -37,9 +37,7 @@ function tryLoginUser()
 
     $errors = validate($data, $validationRules);
 
-    if ($errors) {
-        response(422, $errors);
-    }
+    if ($errors) response(422, $errors);
 
     $user = User::findByEmail($data['email']);
 
