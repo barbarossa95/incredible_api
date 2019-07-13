@@ -17,8 +17,8 @@ class User extends Model
         'email',
         'password',
         'name',
+        'last_login_at',
         'birthdate',
-        'avatar',
     ];
 
     /**
@@ -31,24 +31,21 @@ class User extends Model
         $pdo = $this->connection;
 
         $userQuery = $pdo->prepare("
-            INSERT INTO users (email, password, name, birthdate, avatar)
-            VALUES (:email, :password, :name, :birthdate, :avatar)
+            INSERT INTO " . $this->table . " (email, password, name, last_login_at, birthdate)
+            VALUES (:email, :password, :name, :last_login_at, :birthdate)
         ");
 
-        // $id = $this->escape($this->id);
-        $email = $this->escape($this->email);
-        $password = $this->escape($this->password);
-        $name = $this->escape($this->name);
-        $birthdate = $this->escape($this->birthdate);
-        $avatar = $this->escape($this->avatar);
-
-        $hashedPassword = password_hash($password, PASSWORD_BCRYPT, array('cost' => 12));
+        $email = $this->email;
+        $name = $this->name;
+        $lastLoginAt = date("Y-m-d H:i:s");
+        $birthdate = $this->birthdate ?? date("Y-m-d H:i:s");
+        $password = $this->password;
 
         $userQuery->bindParam(':email', $email);
-        $userQuery->bindParam(':password', $hashedPassword);
+        $userQuery->bindParam(':password', $password);
         $userQuery->bindParam(':name', $name);
+        $userQuery->bindParam(':last_login_at', $lastLoginAt);
         $userQuery->bindParam(':birthdate', $birthdate);
-        $userQuery->bindParam(':avatar', $avatar);
 
         return $userQuery->execute();
     }
