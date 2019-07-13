@@ -203,4 +203,48 @@ class User extends Model
 
         return $settings;
     }
+
+    /**
+     * Get list of users based on settings
+     *
+     * @return User[]|null
+     */
+    public function getUsersFeed($offset, $limit = 10)
+    {
+        return null;
+        $pdo = self::connection();
+
+        $query = [
+            User::SEARCH_FILTER_WORLD => "
+                select *, (YEAR(CURRENT_TIMESTAMP) - YEAR(birthdate)) as age,
+                (6371.008 *(acos(cos(radians(54)) * cos(radians(`lat`)) * cos(radians(`long`) - radians(73)) + sin(radians(54)) * sin(radians(`lat`))))) as distance
+                from users
+            ",
+            User::SEARCH_FILTER_COUNTRY => "
+                select *, (YEAR(CURRENT_TIMESTAMP) - YEAR(birthdate)) as age,
+                (6371.008 *(acos(cos(radians(54)) * cos(radians(`lat`)) * cos(radians(`long`) - radians(73)) + sin(radians(54)) * sin(radians(`lat`))))) as distance
+                from users
+                where country_code='RU'
+            ",
+            User::SEARCH_FILTER_NEAR => "
+                select *, (YEAR(CURRENT_TIMESTAMP) - YEAR(birthdate)) as age,
+                (6371.008 *(acos(cos(radians(54)) * cos(radians(`lat`)) * cos(radians(`long`) - radians(73)) + sin(radians(54)) * sin(radians(`lat`))))) as distance
+                from users
+                having (6371.008 *(acos(cos(radians(54)) * cos(radians(`lat`)) * cos(radians(`long`) - radians(73)) + sin(radians(54)) * sin(radians(`lat`))))) < 50
+            ",
+        ];
+
+        $userInterests = $this->getInterests();
+        $settingsInterests = $this->getSettings();
+
+        foreach ($settingsInterests as $interest) { }
+
+        $stmt = $pdo->prepare($query);
+        $stmt->execute([$this->id]);
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $users[] = UserInterest::fill($row);
+        }
+
+        return $users;
+    }
 }
