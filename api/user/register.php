@@ -3,7 +3,7 @@
 require_once $_SERVER['DOCUMENT_ROOT'] . '/vendor/autoload.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/scripts/helpers.php';
 
-use \Models\User;
+use Models\User;
 
 $requestMethod = $_SERVER["REQUEST_METHOD"];
 

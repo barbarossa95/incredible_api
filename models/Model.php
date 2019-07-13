@@ -2,8 +2,10 @@
 
 namespace Models;
 
-use Database\DB;
+require $_SERVER['DOCUMENT_ROOT'] . '/database/connection.php';
+
 use PDO;
+use Database\DB;
 
 class Model
 {
