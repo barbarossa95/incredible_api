@@ -64,7 +64,8 @@ function registerUser()
     $user->name = $data['name'];
     $user->birthdate = $data['birthdate'];
 
-    /* for production mode need to parse data
+    // for production mode need to parse data
+    /*
     $geoData = parseGeoIpInfo($_SERVER['REMOTE_ADDR']);
     $user->lat = $geoData['geoplugin_latitude'];
     $user->long = $geoData['geoplugin_longitude'];

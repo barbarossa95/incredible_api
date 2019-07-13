@@ -5,7 +5,7 @@ namespace Models;
 /**
  * Class for work with user interests
  */
-class UserInterest extends Model
+class UserInterest extends Settings
 {
     protected $table = 'user_interests';
 }

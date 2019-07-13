@@ -93,9 +93,38 @@ class User extends Model
 
         if ($success) {
             $this->id = self::findByEmail($email, 'id')->id;
+            $this->initSettings();
         }
 
         return $success;
+    }
+
+    /**
+     * Init user settings
+     *
+     * @return void
+     */
+    public function initSettings()
+    {
+        $interests = array_map(
+            function ($item) {
+                return $item->slug;
+            },
+            Interest::getAll()
+        );
+
+        foreach ($interests as $interest) {
+            $userInterest = new UserInterest;
+            $userInterest->user_id = $this->id;
+            $userInterest->interest_slug = $interest;
+            $userInterest->value = true;
+            $userInterest->create();
+
+            $searchInterest = new Settings;
+            $searchInterest->user_id = $this->id;
+            $searchInterest->interest_slug = $interest;
+            $searchInterest->create();
+        }
     }
 
     /**
