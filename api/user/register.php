@@ -50,6 +50,12 @@ function registerUser()
         response(422, $errors);
     }
 
+    if (User::isEmailTaken($data['email'])) {
+        response(422, [
+            'email' => ['This email is already taken']
+        ]);
+    }
+
     $hashedPassword = password_hash($data['password'], PASSWORD_BCRYPT, array('cost' => 12));
     $user = new User;
     $user->email = $data['email'];
@@ -66,7 +72,5 @@ function registerUser()
 
     if (!$user->create()) return null;
 
-    return [
-        'token' => generateToken($user)
-    ];
+    return ['token' => generateToken($user)];
 }

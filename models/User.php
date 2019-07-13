@@ -1,6 +1,6 @@
 <?php
 
-require 'Model.php';
+require_once 'Model.php';
 
 /**
  * Class for work with user
@@ -48,5 +48,16 @@ class User extends Model
         $userQuery->bindParam(':birthdate', $birthdate);
 
         return $userQuery->execute();
+    }
+
+    public static function isEmailTaken($email)
+    {
+        $pdo = DB::getInstance();
+        $stmt = $pdo->prepare("SELECT COUNT(*) AS count FROM users WHERE email=?");
+        $stmt->execute(array($email));
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $email_count = $row["count"];
+        }
+        return $email_count > 0;
     }
 }
