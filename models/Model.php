@@ -1,6 +1,9 @@
 <?php
 
-require $_SERVER['DOCUMENT_ROOT'] . '/database/connection.php';
+namespace Models;
+
+use Database\DB;
+use PDO;
 
 class Model
 {

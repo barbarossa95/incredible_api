@@ -1,6 +1,8 @@
 <?php
 
-require_once 'Model.php';
+namespace Models;
+
+use PDO;
 
 /**
  * Class for work with user settings

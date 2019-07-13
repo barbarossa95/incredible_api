@@ -1,6 +1,6 @@
 <?php
 
-require_once 'Model.php';
+namespace Models;
 
 /**
  * Class for work with user settings
@@ -68,5 +68,11 @@ class Settings extends Model
         $settingsQuery->bindParam(':value', $value);
 
         return $settingsQuery->execute();
+    }
+
+    public function setValue($value)
+    {
+        $this->value = $value;
+        return $this->update();
     }
 }

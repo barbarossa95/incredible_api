@@ -1,11 +1,11 @@
 <?php
 
-require_once 'Settings.php';
+namespace Models;
 
 /**
  * Class for work with user interests
  */
-class UserInterest extends Settings
+class UserInterest extends Model
 {
     protected $table = 'user_interests';
 }

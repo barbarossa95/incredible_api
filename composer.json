@@ -12,5 +12,13 @@
     "fzaninotto/faker": "^1.8",
     "firebase/php-jwt": "^5.0",
     "vlucas/valitron": "^1.4"
+  },
+  "autoload": {
+    "psr-4": {
+      "Models\\": "models/",
+      "Database\\": "database/",
+      "Scripts\\": "scripts/",
+      "Api\\": "api/"
+    }
   }
 }

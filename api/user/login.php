@@ -1,7 +1,9 @@
 <?php
 
-require $_SERVER['DOCUMENT_ROOT'] . '/scripts/helpers.php';
-require $_SERVER['DOCUMENT_ROOT'] . '/models/User.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/vendor/autoload.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/scripts/helpers.php';
+
+use \Models\User;
 
 $requestMethod = $_SERVER["REQUEST_METHOD"];
 

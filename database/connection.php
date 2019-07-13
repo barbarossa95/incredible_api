@@ -1,5 +1,9 @@
 <?php
 
+namespace Database;
+
+use PDO;
+
 /**
  * Класс-синглтон для получения pdo соединения с бд
  */
