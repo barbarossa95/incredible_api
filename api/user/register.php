@@ -9,6 +9,7 @@ if ($requestMethod !== 'POST') response(405);
 
 try {
     $response = registerUser();
+
     if ($response) response(200, $response);
 
     response(500, 'some server error');
