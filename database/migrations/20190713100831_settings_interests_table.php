@@ -2,17 +2,18 @@
 
 use Phinx\Migration\AbstractMigration;
 
-class UserInterestsTable extends AbstractMigration
+class SettingsInterestsTable extends AbstractMigration
 {
     /**
      * Change Method.
      */
     public function change()
     {
-        $table = $this->table('user_interests');
+        $table = $this->table('settings_interests');
         $table
             ->addColumn('user_id', 'integer', ['null' => true, 'default' => null])
             ->addColumn('interest_slug', 'string', ['limit' => 20, 'null' => true, 'default' => null])
+            ->addColumn('value', 'boolean', ['null' => true, 'default' => null])
             ->create();
 
         $table
