@@ -1,6 +1,9 @@
 <?php
 
+require_once $_SERVER['DOCUMENT_ROOT'] . '/vendor/autoload.php';
+
 use \Firebase\JWT\JWT;
+use Valitron\Validator;
 
 /**
  * Request helper function to get JSON input data
@@ -16,6 +19,25 @@ function request()
 }
 
 /**
+ * Helper for request validation
+ *
+ * @param array $request
+ * @param array $rules
+ * @return mixed
+ */
+function validate($request, $rules)
+{
+    $validator = new Validator($request);
+    $validator->mapFieldsRules($rules);
+
+    if ($validator->validate()) {
+        return false;
+    } else {
+        return $validator->errors();
+    }
+}
+
+/**
  * Response helper function
  *
  * @param integer $code http status code
@@ -25,7 +47,7 @@ function request()
 function response($code, $data = null)
 {
     http_response_code($code);
-    if ($code == 200) header('Content-Type: application/json; charset=UTF-8');
+    if ($code == 200 || $code == 422) header('Content-Type: application/json; charset=UTF-8');
 
     if ($code !== 200) header('Content-Type: text/plain; charset=UTF-8');
 
@@ -33,6 +55,7 @@ function response($code, $data = null)
     switch ($code) {
         case 201: // ok
             exit();
+        case 422:
         case 200: // created
             echo json_encode($data);
             exit();
@@ -44,9 +67,6 @@ function response($code, $data = null)
             break;
         case 405:
             echo 'Method not allowed';
-            break;
-        case 422:
-            echo 'Validation error';
             break;
         case 500:
             echo 'Internal server error';
@@ -148,16 +168,14 @@ function authorize()
 /**
  * Decode token payload
  *
- * @param string $token
+ * @param string $jwt
  * @return array|null
  */
-function decodeToken($token)
+function decodeToken($jwt)
 {
     try {
-        // todo: decode token here
-        $payload = $token;
-        $payload = null;
-        return $payload;
+        $key = $_ENV['AUTH_KEY'];
+        return JWT::decode($jwt, $key, array('HS256'));
     } catch (Exception $ex) {
         return null;
     }
@@ -165,7 +183,7 @@ function decodeToken($token)
 
 function generateToken($user)
 {
-    $key = "example_key"; // строка для примера, в реальом проекте следует выносить ключ шифрования в переменные среды
+    $key = $_ENV['AUTH_KEY'];
     $token = [
         "iss" => "http://incredible.test",
         "aud" => "http://incredible.test",
@@ -173,4 +191,6 @@ function generateToken($user)
         "exp" => strtotime("+ 1 day"),
         "user" => $user->id
     ];
+
+    return JWT::encode($token, $key);
 }
