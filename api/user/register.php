@@ -1,22 +1,18 @@
 <?php
 
-$rootDir = $_SERVER['DOCUMENT_ROOT'];
-
-include("$rootDir/scripts/connection.php");
-include("$rootDir/scripts/helpers.php");
+require $_SERVER['DOCUMENT_ROOT'] . '/scripts/helpers.php';
 
 $requestMethod = $_SERVER["REQUEST_METHOD"];
 
-switch ($requestMethod) {
-    case 'GET': // todo
-    case 'POST':
-        $user = registerUser();
-        break;
-    default:
-        response(501);
-        break;
-};
+if ($requestMethod !== 'POST') response(405);
 
+$user = registerUser();
+
+if ($user) response(201);
+
+response(501, 'some server error');
+
+/*
 function registerUser()
 {
     $pdo = DB::getInstance();
@@ -56,3 +52,4 @@ function registerUser()
     // response with user and jwt
     response(200, $data);
 }
+*/
