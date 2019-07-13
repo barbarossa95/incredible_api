@@ -7,6 +7,10 @@ require_once 'Model.php';
  */
 class User extends Model
 {
+    const SEARCH_FILTER_WORLD = 'world';
+    const SEARCH_FILTER_COUNTRY = 'country';
+    const SEARCH_FILTER_NEAR = 'near';
+
     protected $table = 'users';
 
     /**
@@ -33,7 +37,7 @@ class User extends Model
      */
     public function update()
     {
-        $pdo = $this->connection;
+        $pdo = self::connection();
 
         $userQuery = $pdo->prepare("
             UPDATE " . $this->table . " SET email=:email, password=:password, name=:name, last_login_at=:last_login_at, birthdate=:birthdate
@@ -65,7 +69,7 @@ class User extends Model
      */
     public function create()
     {
-        $pdo = $this->connection;
+        $pdo = self::connection();
 
         $userQuery = $pdo->prepare("
             INSERT INTO " . $this->table . " (email, password, name, last_login_at, birthdate)
@@ -95,7 +99,7 @@ class User extends Model
 
     public static function isEmailTaken($email)
     {
-        $pdo = DB::getInstance();
+        $pdo = self::connection();
         $stmt = $pdo->prepare("SELECT COUNT(*) AS count FROM users WHERE email=?");
         $stmt->execute([$email]);
         while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
@@ -104,29 +108,13 @@ class User extends Model
         return $email_count > 0;
     }
 
-    public static function findByEmail($email, $fields = '*')
+    public static function findByEmail($email)
     {
-        $pdo = DB::getInstance();
-
-        $stmt = $pdo->prepare("SELECT " . $fields . " FROM users WHERE email=?");
-        $stmt->execute([$email]);
-        if (!$row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-            return null;
-        }
-
-        return self::fill($row);
+        return self::findBy('email', $email);
     }
 
-    public static function findById($id, $fields = '*')
+    public static function findById($id)
     {
-        $pdo = DB::getInstance();
-
-        $stmt = $pdo->prepare("SELECT " . $fields . " FROM users WHERE id=?");
-        $stmt->execute([$id]);
-        if (!$row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-            return null;
-        }
-
-        return self::fill($row);
+        return self::findBy('id', $id);
     }
 }

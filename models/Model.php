@@ -5,11 +5,6 @@ require $_SERVER['DOCUMENT_ROOT'] . '/database/connection.php';
 class Model
 {
     /**
-     * PDOP Connection
-     */
-    protected $connection;
-
-    /**
      * @var string table name
      */
     protected $table = '';
@@ -28,9 +23,7 @@ class Model
      * Default class constructor
      */
     public function __construct()
-    {
-        $this->connection = DB::getInstance();
-    }
+    { }
 
     /**
      * Helper function
@@ -67,6 +60,37 @@ class Model
     {
         return in_array($name, $this->fields) ?
             $this->data[$name] : null;
+    }
+
+    /**
+     * Static call for get PDO connection
+     *
+     * @return PDO
+     */
+    public static function connection()
+    {
+        return DB::getInstance();
+    }
+
+    /**
+     * Find by function
+     *
+     * @param string $field searchable field
+     * @param string $value needle value
+     * @param self|null
+     */
+    public static function findBy($field, $value)
+    {
+        $class = get_called_class();
+        $pdo = self::connection();
+
+        $stmt = $pdo->prepare("SELECT * FROM users WHERE " . $field . "=?");
+        $stmt->execute([$value]);
+        if (!$row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            return null;
+        }
+
+        return $class::fill($row);
     }
 
     /**
