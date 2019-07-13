@@ -162,7 +162,7 @@ function authorize()
 
     if (!$payload) response(403);
 
-    $_REQUEST['user_id'] = $payload['user_id'];
+    return $payload->user;
 }
 
 /**
@@ -174,16 +174,16 @@ function authorize()
 function decodeToken($jwt)
 {
     try {
-        $key = $_ENV['AUTH_KEY'];
+        $key = 'sy$k$Mr+Va-T6^`7M~\TG]K';
         return JWT::decode($jwt, $key, array('HS256'));
     } catch (Exception $ex) {
-        return null;
+        response(500, $ex);
     }
 }
 
 function generateToken($user)
 {
-    $key = $_ENV['AUTH_KEY'];
+    $key = 'sy$k$Mr+Va-T6^`7M~\TG]K';
     $token = [
         "iss" => "http://incredible.test",
         "aud" => "http://incredible.test",
