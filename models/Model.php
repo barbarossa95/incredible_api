@@ -61,7 +61,7 @@ class Model
      * Getter for table fields
      *
      * @param string $name field name
-     * @return string field value
+     * @return mixed field value
      */
     public function __get($name)
     {
