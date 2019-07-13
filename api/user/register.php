@@ -1,55 +1,72 @@
 <?php
 
 require $_SERVER['DOCUMENT_ROOT'] . '/scripts/helpers.php';
+require $_SERVER['DOCUMENT_ROOT'] . '/models/User.php';
 
 $requestMethod = $_SERVER["REQUEST_METHOD"];
 
 if ($requestMethod !== 'POST') response(405);
 
-$user = registerUser();
+try {
+    $response = registerUser();
+    if ($response) response(200, $response);
 
-if ($user) response(201);
+    response(500, 'some server error');
+} catch (Exception $ex) {
+    response(500, $ex);
+}
 
-response(501, 'some server error');
-
-/*
+/**
+ * Register user action
+ */
 function registerUser()
 {
-    $pdo = DB::getInstance();
-
     $data = request();
-    $allowed = [
-        'email',
-        'password',
-        'password_confirmation',
-        'name',
-        'birthdate',
-        'interests',
-        'avatar'
+
+    $validationRules = [
+        'name' => [
+            'required',
+            ['lengthMax', 20]
+        ],
+        'email' => [
+            'required',
+            'email',
+            ['lengthMax', 40]
+        ],
+        'password' => [
+            'required',
+            ['lengthMin', 4]
+        ],
+        'birthdate' => [
+            'required',
+            'date'
+        ],
+
     ];
 
-    $data = filterArrayByKeys(request(), $allowed);
+    $errors = validate($data, $validationRules);
 
-    $data = array_map(function ($item) use ($pdo) {
-        return $pdo->quote($item);
-    }, $data);
+    if ($errors) {
+        response(422, $errors);
+    }
 
-    // todo: validate data
+    $hashedPassword = password_hash($data['password'], PASSWORD_BCRYPT, array('cost' => 12));
+    $user = new User;
+    $user->email = $data['email'];
+    $user->password = $hashedPassword;
+    $user->name = $data['name'];
+    $user->birthdate = $data['birthdate'];
 
-    // sql on create user
-    $userQuery = $pdo->prepare("
-    INSERT INTO users (email, password, name, birthdate, avatar)
-    VALUES (:email, :password, :name, :birthdate, :avatar)");
-    $userQuery->bindParam(':email', $data['email']);
-    $userQuery->bindParam(':password', $data);
-    $userQuery->bindParam(':name', $data['name']);
-    $userQuery->bindParam(':birthdate', $data['birthdate']);
-    $userQuery->bindParam(':avatar', $data['avatar']);
-    $userQuery->execute();
+    /* for production mode need to parse data
+    $geoData = parseGeoIpInfo($_SERVER['REMOTE_ADDR']);
+    $user->lat = $geoData['geoplugin_latitude'];
+    $user->long = $geoData['geoplugin_longitude'];
+    $user->country_code = $geoData['geoplugin_countryCode'];
+    */
 
-    // todo create jwt
+    if (!$user->create()) return null;
 
-    // response with user and jwt
-    response(200, $data);
+    return [
+        'token' => generateToken($user)
+    ];
 }
-*/
