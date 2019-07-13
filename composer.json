@@ -7,5 +7,7 @@
       "email": "vgreshilov@mail.ru"
     }
   ],
-  "require": {}
+  "require": {
+    "firebase/php-jwt": "^5.0"
+  }
 }
