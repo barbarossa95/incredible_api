@@ -47,9 +47,7 @@ function registerUser()
 
     $errors = validate($data, $validationRules);
 
-    if ($errors) {
-        response(422, $errors);
-    }
+    if ($errors) response(422, $errors);
 
     if (User::isEmailTaken($data['email'])) {
         response(422, [
