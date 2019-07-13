@@ -1,6 +1,8 @@
 <?php
 
 require_once 'Model.php';
+require_once 'Settings.php';
+require_once 'UserInterest.php';
 
 /**
  * Class for work with user
@@ -61,7 +63,6 @@ class User extends Model
         return $userQuery->execute();
     }
 
-
     /**
      * Create new user
      *
@@ -97,6 +98,12 @@ class User extends Model
         return $success;
     }
 
+    /**
+     * Finc users with given email count
+     *
+     * @param string $email
+     * @return bool
+     */
     public static function isEmailTaken($email)
     {
         $pdo = self::connection();
@@ -108,13 +115,63 @@ class User extends Model
         return $email_count > 0;
     }
 
+    /**
+     * Find user by email value
+     *
+     * @param integer $email
+     * @return self|null
+     */
     public static function findByEmail($email)
     {
         return self::findBy('email', $email);
     }
 
+    /**
+     * Find user by id value
+     *
+     * @param integer $id
+     * @return self|null
+     */
     public static function findById($id)
     {
         return self::findBy('id', $id);
+    }
+
+    /**
+     * Get User search settings
+     *
+     * @return Settings[]
+     */
+    public function getSettings()
+    {
+        $settings = [];
+
+        $pdo = self::connection();
+        $stmt = $pdo->prepare("SELECT * FROM settings_interests WHERE user_id=?");
+        $stmt->execute([$this->id]);
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $settings[] = Settings::fill($row);
+        }
+
+        return $settings;
+    }
+
+    /**
+     * Get User interests
+     *
+     * @return UserInterest[]
+     */
+    public function getInterests()
+    {
+        $settings = [];
+
+        $pdo = self::connection();
+        $stmt = $pdo->prepare("SELECT * FROM user_interests WHERE user_id=?");
+        $stmt->execute([$this->id]);
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $settings[] = UserInterest::fill($row);
+        }
+
+        return $settings;
     }
 }
