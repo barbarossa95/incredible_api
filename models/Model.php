@@ -68,4 +68,22 @@ class Model
         return in_array($name, $this->fields) ?
             $this->data[$name] : null;
     }
+
+    /**
+     * Static function for filling model by data
+     *
+     * @param array $data
+     * @return self
+     */
+    public static function fill($data)
+    {
+        $class = get_called_class();
+        $instance = new $class;
+
+        foreach ($data as $key => $value) {
+            $instance->$key = $value;
+        }
+
+        return $instance;
+    }
 }
