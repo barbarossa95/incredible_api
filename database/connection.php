@@ -31,7 +31,7 @@ class DB
                     $db_info['db_user'],
                     $db_info['db_pass']
                 );
-                self::$instance->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_SILENT);
+                self::$instance->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
                 self::$instance->query('SET NAMES utf8');
                 self::$instance->query('SET CHARACTER SET utf8');
 
