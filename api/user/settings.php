@@ -63,6 +63,8 @@ $user = User::findById($userId);
 if (!$user) response(403);
 
 $user->fill($data);
+$user->update();
+
 $interests = $user->getInterests();
 $settings = $user->getSettings();
 
@@ -74,3 +76,5 @@ foreach ($settings as $settingsItem) {
     $newValue = $data['search_interests'][$settingsItem->interest_slug];
     $settingsItem->setValue($newValue);
 }
+
+response(201);

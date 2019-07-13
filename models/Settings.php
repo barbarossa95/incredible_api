@@ -55,8 +55,8 @@ class Settings extends Model
         $pdo = self::connection();
 
         $settingsQuery = $pdo->prepare("
-            INSERT INTO " . $this->table . " (email, password, name, last_login_at, birthdate)
-            VALUES (:email, :password, :name, :last_login_at, :birthdate)
+            INSERT INTO " . $this->table . " (user_id, interest_slug, value)
+            VALUES (:user_id, :interest_slug, :value)
         ");
 
         $userId = $this->user_id;
