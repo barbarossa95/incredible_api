@@ -10,71 +10,84 @@ $requestMethod = $_SERVER["REQUEST_METHOD"];
 
 if ($requestMethod !== 'POST') response(405);
 
-$userId = authorize();
+try {
+    $response = updateSettings();
 
-$interests = array_map(
-    function ($item) {
-        return $item->slug;
-    },
-    Interest::getAll()
-);
+    if ($response) response(201);
 
-$data = request();
-
-$validationRules = [
-    'age_limit_min' => [
-        'required',
-        'integer',
-        ['in', [0, 18, 24, 40]]
-    ],
-    'age_limit_max' => [
-        'required',
-        'integer',
-        ['in', [0, 18, 24, 40]]
-    ],
-    'age_search_min' => [
-        'integer',
-        ['in', [null, 18, 24, 40]]
-    ],
-    'age_search_max' => [
-        'integer',
-        ['in', [null, 18, 24, 40]]
-    ],
-    'location' => [
-        'required',
-        ['in', ['world', 'country', 'near']]
-    ],
-    'user_interests' => [
-        'array',
-        ['arrayHasKeys', $interests]
-    ],
-    'search_interests' => [
-        'array',
-        ['arrayHasKeys', $interests]
-    ]
-];
-
-$errors = validate($data, $validationRules);
-
-if ($errors) response(422, $errors);
-
-$user = User::findById($userId);
-
-if (!$user) response(403);
-
-$user->fill($data);
-$user->update();
-
-$interests = $user->getInterests();
-$settings = $user->getSettings();
-
-foreach ($interests as $interest) {
-    $newValue = $data['user_interests'][$interest->interest_slug];
-    $interest->setValue($newValue);
-}
-foreach ($settings as $settingsItem) {
-    $newValue = $data['search_interests'][$settingsItem->interest_slug];
-    $settingsItem->setValue($newValue);
+    response(400);
+} catch (Exception $ex) {
+    response(500, $ex);
 }
 
-response(201);
+function updateSettings()
+{
+    $userId = authorize();
+
+    $interests = array_map(
+        function ($item) {
+            return $item->slug;
+        },
+        Interest::getAll()
+    );
+
+    $data = request();
+
+    $validationRules = [
+        'age_limit_min' => [
+            'required',
+            'integer',
+            ['in', [0, 18, 24, 40]]
+        ],
+        'age_limit_max' => [
+            'required',
+            'integer',
+            ['in', [0, 18, 24, 40]]
+        ],
+        'age_search_min' => [
+            'integer',
+            ['in', [null, 18, 24, 40]]
+        ],
+        'age_search_max' => [
+            'integer',
+            ['in', [null, 18, 24, 40]]
+        ],
+        'location' => [
+            'required',
+            ['in', ['world', 'country', 'near']]
+        ],
+        'user_interests' => [
+            'array',
+            ['arrayHasKeys', $interests]
+        ],
+        'search_interests' => [
+            'array',
+            ['arrayHasKeys', $interests]
+        ]
+    ];
+
+    $errors = validate($data, $validationRules);
+
+    if ($errors) response(422, $errors);
+
+    $user = User::findById($userId);
+
+    if (!$user) response(403);
+
+    $user->fill($data);
+    $user->update();
+
+    $interests = $user->getInterests();
+    $settings = $user->getSettings();
+
+    foreach ($interests as $interest) {
+        $newValue = $data['user_interests'][$interest->interest_slug];
+        $interest->setValue($newValue);
+    }
+    foreach ($settings as $settingsItem) {
+        $newValue = $data['search_interests'][$settingsItem->interest_slug];
+        $settingsItem->setValue($newValue);
+    }
+
+    return true;
+}
