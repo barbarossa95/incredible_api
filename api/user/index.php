@@ -14,6 +14,8 @@ try {
 
     if ($response) response(200, $response);
 
+    if (is_array($response)) response(404);
+
     response(403);
 } catch (Exception $ex) {
     response(500, $ex);
@@ -24,10 +26,11 @@ try {
  */
 function getFeed()
 {
-    $offset = $_GET['offset'] ?? 0;
+    $offset = $_GET['page'] ?? 0;
+    $offset *= 10;
 
     $validationRules = [
-        'offset' => [
+        'page' => [
             'integer',
         ]
     ];

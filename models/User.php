@@ -29,7 +29,10 @@ class User extends Model
         'long',
         'country_code',
         'age_limit_max',
-        'age_limit_min'
+        'age_limit_min',
+        'age_search_max',
+        'age_search_min',
+        'location'
     ];
 
     /**
@@ -205,46 +208,144 @@ class User extends Model
     }
 
     /**
-     * Get list of users based on settings
+     * Build from subqueries
      *
-     * @return User[]|null
+     * @return array
      */
-    public function getUsersFeed($offset, $limit = 10)
+    private function feedSubQueries()
     {
-        return null;
-        $pdo = self::connection();
+        $queryParams = [
+            'lat' => $this->lat,
+            'long' => $this->long,
+        ];
 
-        $query = [
+        $subQueries = [
             User::SEARCH_FILTER_WORLD => "
-                select *, (YEAR(CURRENT_TIMESTAMP) - YEAR(birthdate)) as age,
-                (6371.008 *(acos(cos(radians(54)) * cos(radians(`lat`)) * cos(radians(`long`) - radians(73)) + sin(radians(54)) * sin(radians(`lat`))))) as distance
-                from users
+                SELECT id, email, name, last_login_at, country_code, (YEAR(CURRENT_TIMESTAMP) - YEAR(birthdate)) as age,
+                (6371.008 *(acos(cos(radians(:lat)) * cos(radians(`lat`)) * cos(radians(`long`) - radians(:long)) + sin(radians(:lat)) * sin(radians(`lat`))))) as distance,
+                (3) as priority
+                FROM users
             ",
             User::SEARCH_FILTER_COUNTRY => "
-                select *, (YEAR(CURRENT_TIMESTAMP) - YEAR(birthdate)) as age,
-                (6371.008 *(acos(cos(radians(54)) * cos(radians(`lat`)) * cos(radians(`long`) - radians(73)) + sin(radians(54)) * sin(radians(`lat`))))) as distance
-                from users
-                where country_code='RU'
+                SELECT id, email, name, last_login_at, country_code, (YEAR(CURRENT_TIMESTAMP) - YEAR(birthdate)) as age,
+                (6371.008 *(acos(cos(radians(:lat)) * cos(radians(`lat`)) * cos(radians(`long`) - radians(:long)) + sin(radians(:lat)) * sin(radians(`lat`))))) as distance,
+                (2) as priority
+                FROM users
+                where country_code=:country_code
             ",
             User::SEARCH_FILTER_NEAR => "
-                select *, (YEAR(CURRENT_TIMESTAMP) - YEAR(birthdate)) as age,
-                (6371.008 *(acos(cos(radians(54)) * cos(radians(`lat`)) * cos(radians(`long`) - radians(73)) + sin(radians(54)) * sin(radians(`lat`))))) as distance
-                from users
-                having (6371.008 *(acos(cos(radians(54)) * cos(radians(`lat`)) * cos(radians(`long`) - radians(73)) + sin(radians(54)) * sin(radians(`lat`))))) < 50
+                SELECT id, email, name, last_login_at, country_code, (YEAR(CURRENT_TIMESTAMP) - YEAR(birthdate)) as age,
+                (6371.008 *(acos(cos(radians(:lat)) * cos(radians(`lat`)) * cos(radians(`long`) - radians(:long)) + sin(radians(:lat)) * sin(radians(`lat`))))) as distance,
+                (1) as priority
+                FROM users
+                having distance < 50
             ",
         ];
 
-        $userInterests = $this->getInterests();
-        $settingsInterests = $this->getSettings();
+        $locationFilter = $this->location;
 
-        foreach ($settingsInterests as $interest) { }
-
-        $stmt = $pdo->prepare($query);
-        $stmt->execute([$this->id]);
-        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-            $users[] = UserInterest::fill($row);
+        $queryFrom = "(" . $subQueries[User::SEARCH_FILTER_WORLD] . ")";
+        switch ($locationFilter) {
+            case User::SEARCH_FILTER_COUNTRY:
+                $queryParams['country_code'] = $this->country_code;
+                $queryFrom = "(" . $subQueries[User::SEARCH_FILTER_COUNTRY]
+                    . ") union distinct " . $queryFrom;
+                break;
+            case User::SEARCH_FILTER_NEAR:
+                $queryParams['country_code'] = $this->country_code;
+                $queryFrom = "(" . $subQueries[User::SEARCH_FILTER_NEAR]
+                    . ") union distinct ("
+                    . $subQueries[User::SEARCH_FILTER_COUNTRY]
+                    . ") union distinct $queryFrom";
+                break;
         }
 
-        return $users;
+        return [$queryFrom, $queryParams];
+    }
+
+    /**
+     * Build where clause filters
+     *
+     * @return array
+     */
+    private function feedWhereClause()
+    {
+        $queryParams = [];
+
+        $where = "WHERE id<>:ownId ";
+        $queryParams['ownId'] = $this->id;
+
+        if (!empty($limitMax = $this->age_search_max)) {
+            $where .= "AND T.age < :age_search_max";
+            $queryParams['age_search_max'] = $limitMax;
+        }
+
+        if (!empty($limitMin = $this->age_search_min)) {
+            $where .= "AND T.age > :age_search_min";
+            $queryParams['age_search_min'] = $limitMin;
+        }
+
+        $settingsInterests = $this->getSettings();
+
+        foreach ($settingsInterests as $interest) {
+            if ($interest->value === null) continue;
+
+            $queryParams[$interest->interest_slug] = $interest->value;
+            $where .= "
+                AND EXISTS (
+                    SELECT i.user_id
+                    FROM user_interests AS i
+                    WHERE i.interest_slug = '" . $interest->interest_slug . "'
+                    AND i.value = :" . $interest->interest_slug . "
+                    AND i.user_id = T.id
+                )
+            ";
+        }
+
+        $where .= "
+            AND EXISTS (
+                SELECT u.age_limit_min, u.age_limit_max, (YEAR(CURRENT_TIMESTAMP) - YEAR(:birthdate)) as age
+                FROM users AS u
+                WHERE u.id = T.id
+                HAVING (ISNULL(u.age_limit_min) OR age > u.age_limit_min)
+                AND (ISNULL(u.age_limit_max) OR age < u.age_limit_max)
+            )
+        ";
+        $queryParams['birthdate'] = $this->birthdate;
+
+        return [$where, $queryParams];
+    }
+
+    /**
+     * Get list of users based on settings
+     *
+     * @return array|null
+     */
+    public function getUsersFeed($offset, $limit = 10)
+    {
+        $pdo = self::connection();
+
+        list($queryFrom, $queryParamsFrom) = $this->feedSubQueries();
+
+        list($whereClause, $queryParamsWhere) = $this->feedWhereClause();
+
+        $queryParams = array_merge($queryParamsFrom, $queryParamsWhere);
+
+        $query = "
+        SELECT DISTINCT id, email, name, last_login_at, age, distance, country_code
+        FROM ($queryFrom) as T
+        $whereClause
+        ORDER BY
+        T.priority ASC,
+        last_login_at DESC
+        LIMIT $offset,$limit
+        ";
+
+        $stmt = $pdo->prepare($query);
+        $stmt->execute($queryParams);
+
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        response(200, $rows);
+        return;
     }
 }
