@@ -344,8 +344,6 @@ class User extends Model
         $stmt = $pdo->prepare($query);
         $stmt->execute($queryParams);
 
-        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        response(200, $rows);
-        return;
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 }
