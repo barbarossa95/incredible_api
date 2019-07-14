@@ -63,6 +63,9 @@ function response($code, $data = null)
         case 403:
             echo 'Forbidden';
             break;
+        case 404:
+            echo 'Not found';
+            break;
         case 405:
             echo 'Method not allowed';
             break;
